@@ -1,0 +1,118 @@
+
+
+<p>
+We want to convert our simple Todo list application so that it uses a personal cloud for its back end. 
+</p>
+
+<p>
+First, we reference the CloudOS.js JavaScript library:
+</p>
+
+<pre class='code'>
+&lt;script type="text/javascript" src="http://todo.windley.com/js/CloudOS.js"&gt;&lt;/script&gt;
+</pre>
+
+
+
+<p>
+Next, we add some login buttons to the menu.  
+</p>
+
+<pre class="code">
+&lt;ul class="nav pull-right"&gt;
+  &lt;li class="nav-item nav-auth" style="display:none;"&gt;&lt;a href="#" id="nav-logout"&gt;Logout&lt;/a&gt;&lt;/li&gt;
+  &lt;li class="nav-item nav-anon" style="display:none;"&gt;&lt;a href="#" class="oauth-sqtag-url"&gt;Login&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+
+<p>
+Now, we want to wire them up. 
+</p>
+
+<pre class="code">
+// -------- Authenticate --------------
+var OAuth_Sqtag_URL = CloudOS_Get_OAuth_URL();
+$('a.oauth-sqtag-url').attr('href', OAuth_Sqtag_URL);
+
+// Check authentication
+CloudOS_Retrieve_Session();
+
+if (CloudOS_Authenticated_Session()) {
+  $('li.nav-auth').show();
+  $('li.nav-anon').hide();
+} else {
+  $('li.nav-auth').hide();
+  $('li.nav-anon').show();
+  CloudOS_Process_Token(window.location.search.substring(1));
+}
+
+$('#nav-logout').click( function() {
+    CloudOS_Remove_Session();
+    $('li.nav-auth').hide();
+    $('li.nav-anon').show();
+    $('div.todo_list').html('');
+    return false;
+});
+// -------- End Authenticate --------------
+</pre>
+
+
+<p>
+This is where all the authentication magic happens. We're doing the following:
+</p>
+
+<ol>
+<li>Attaching the CloudOS OAuth URL to the login button</li>
+
+<li>Retrieving the session, if one exists</li>
+
+<li>Showing either the login or logout button depending on the status of the session</li>
+
+<li>Processing the OAuth token, if necessary</li>
+
+<li>Wiring up the logout button to remove the session, show the login button, and clear the todo list</li>
+</ol>
+
+<p>
+This is by far the most complicated thing we need to do. 
+</p>
+
+
+<p>
+Next we want to ensure that any todo items in the cloud are shown
+</p>
+
+<pre class="code">
+// -------- Initialize --------------
+CloudOS_PDS_List ('todo', function(json){
+    $.each(json || [], function(id, desc) {
+       add_todo_list_item(id, JSON.parse(desc))
+       console.log("Listing ", id, " as ", desc);
+    });
+});
+</pre>
+
+
+<p>
+We add a function to save todo items to the cloud when we add them:
+</p>
+
+<pre class='code'>
+// ---- add todo to PDS ---
+CloudOS_PDS_Add ('todo', todo_id, todoDescription, function(){
+   console.log("Added " + todo_id + " as " + todoDescription);
+});
+</pre>
+
+
+<p>
+We add a function to delete todo items to the cloud when we delete them 
+</p>
+
+<pre class='code'>
+// ---- del todo from PDS ---
+  CloudOS_PDS_Delete ('todo', todo_id, function(){
+    console.log("Deleted " + todo_id);
+});
+</pre>
+

@@ -1,0 +1,211 @@
+<!DOCTYPE HTML>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CloudOS Todo Example</title>
+
+    <link href="/css/bootstrap.css" rel="stylesheet">
+
+<style>
+	html {
+		font: small/1.8 "Lucida Grande", Tahoma, sans-serif;
+	}
+	div.main {
+		margin: 70px 50px;
+	}	
+
+	div.enter_todo {
+	        margin-top: 10px;
+		padding: 7px 20px;
+		height:25px;
+		width:560px;
+		background: #eee;
+		border:1px solid #aaa;
+	}
+
+	div.todo_list {
+	  margin-top: 20px;
+	}
+	
+	div.todo_list > div.todo {
+		background: #eeeeff;
+		min-width:350px;
+		max-width:600px;
+		min-height:25px;	
+		padding-top:2px;	
+		margin-top:1px;
+	}
+	
+	div.todo_list > div.todo > div {
+		float:left;		
+	}
+	
+	div.todo_list > div.todo  {
+		margin-left:5px;
+	}
+	
+	div.todo_list > div.checked {
+		text-decoration: line-through;
+		background: #eed;
+	}
+
+	button.complete {
+	  margin-top: 20px;
+	}
+
+	div.all_complete {
+		padding: 7px 20px;
+		height:25px;
+		width:560px;
+		background: #afa;
+		border:1px solid #aaa;
+	}
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="http://todo.windley.com/js/CloudOS.js"></script>
+
+<script type="text/javascript">
+
+	CloudOS.appKey = "0AB2F236-B1DE-11E2-B9AC-D788FE2E5C38";
+	CloudOS.callbackURL = "http://todo.windley.com/linkable.html";
+
+
+       now = function(){
+         return +new Date;
+       }
+	$(document).ready( function() {		
+
+                function add_todo_list_item(id, desc) {
+                       $('.todo_list').prepend('<div class="todo">'
+			        + '<span>'
+				+ '<input type="checkbox" class="check_todo" name="check_todo" value="' 
+                                        + id +'"/>'
+				+ '</span>'
+				+ '<span class="todo_description"> '
+				+ desc
+				+ '</span>'
+			        + '</div>');
+			
+			$('.check_todo').unbind('click');
+			$('.check_todo').click( function() {
+				var todo = $(this).parent().parent();
+				todo.toggleClass('checked');
+			});
+		        return id;
+
+                };
+
+		$('#add_todo').click( function() {
+			var todoDescription = $('#todo_description').val();
+                        var todo_id = 'todo/'+now();
+
+// ---- add todo to PDS ---
+CloudOS.PDSAdd ('todo', todo_id, todoDescription, function(){
+   console.log("Added " + todo_id + " as " + todoDescription);
+});
+				
+
+			add_todo_list_item(todo_id, todoDescription);
+
+			$('#todo_form')[0].reset();
+			return false;
+		});  
+		
+		$('#del_todo').click( function() {
+
+                  $('input:checked').map(function() {
+			var todo_id = $(this).val();
+// ---- del todo from PDS ---
+  CloudOS.PDSDelete ('todo', todo_id, function(){
+    console.log("Deleted " + todo_id);
+});
+                        return $(this).parent().parent().remove();
+                  })
+
+	          if($('input.check_todo').length < 1) {
+		    $('.todo_list').prepend("<div class='alert alert-success'>Congratulations! All items completed.</div>");
+                  }
+  		  return false;
+		});
+
+
+// -------- Authenticate --------------
+var OAuth_Sqtag_URL = CloudOS.getOAuthURL();
+
+console.log("OAuth URL: ", OAuth_Sqtag_URL);
+$('a.oauth-sqtag-url').attr('href', OAuth_Sqtag_URL);
+
+// Check authentication
+CloudOS.retrieveSession();
+
+if (CloudOS.authenticatedSession()) {
+  $('li.nav-auth').show();
+  $('li.nav-anon').hide();
+} else {
+  $('li.nav-auth').hide();
+  $('li.nav-anon').show();
+  CloudOS.getOAuthAccessToken(
+	CloudOS.retrieveOAuthCode(window.location.search.substring(1)),
+        function(json) {
+	    window.location.href = window.location.href.split('?')[0];
+        });
+}
+
+$('#nav-logout').click( function() {
+    CloudOS.removeSession();
+    $('li.nav-auth').hide();
+    $('li.nav-anon').show();
+    $('div.todo_list').html('');
+    return false;
+});
+// -------- End Authenticate --------------
+
+// -------- Initialize --------------
+CloudOS.PDSList ('todo', function(json){
+    $.each(json || [], function(id, desc) {
+       add_todo_list_item(id, JSON.parse(desc))
+       console.log("Listing ", id, " as ", desc);
+    });
+});		    
+		
+	});
+</script>
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="/">CloudOS Todo List</a>
+      <div class="nav-collapse collapse">
+<ul class="nav pull-right">
+  <li class="nav-item nav-auth" style="display:none;"><a href="#" id="nav-logout">Logout</a></li>
+  <li class="nav-item nav-anon" style="display:none;"><a href="#" class="oauth-sqtag-url">Login</a></li>
+</ul>	
+      </div><!--/.nav-collapse -->
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="main">
+    <div class="enter_todo">
+       <form id="todo_form" class="form-inline" action="#jquery_todos" method="POST">
+ 	 <input type="text" placeholder="Add a todo item..." class="input-xlarge" id="todo_description" name="todo_description">
+ 	 <button type="submit" class="btn btn-mini btn-primary" id="add_todo" value="Add">Add</button>
+       </form>
+    </div>
+	
+    <div class="todo_list">
+    </div>
+    <div>
+      <form id="del_form" action="#jquery_del" method="POST">
+
+        <button type="submit" class="complete btn btn-success" id="del_todo" value="Completed">Completed</button>
+      </form>
+    </div>	
+
+    <div>
+      <p>Adapted from <a href="http://www.buildfortheweb.com/2010/11/25/create-a-to-do-list-with-jquery/">Build for the Web: create a To do list with jQuery</a></p>
+    </div>
+  </div>
+</div>
+</body></html>
