@@ -5,4 +5,6 @@ You may also want to play with the [Forever application](http://forevr.us/) whic
 
 The TODO list application and Forever both make use of the [CloudOS.js library](https://github.com/kynetx/CloudOS.js) to speak to personal clouds based on CloudOS. The example personal cloud platform we use is [SquareTag](https://squaretag.com/), but any CloudOS-based personal cloud should work.  The goal is to have applications written in a PCAA-style that can link to a variety of personal clouds. 
 
+The `index.html` file is a simple TODO list without any persistence. The `linkable.html` file has been modified to add persistence via CloudOS. The [conversion document](https://github.com/windley/CloudOS-Todo-Demo/blob/master/convert.html) describes the steps necessary to convert one to the other. 
+
 
