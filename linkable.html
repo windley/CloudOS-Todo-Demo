@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>CloudOS Todo Example</title>
 
-    <link href="/css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet">
 
 <style>
 	html {
@@ -61,17 +61,15 @@
 	}
 </style>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="http://todo.windley.com/js/CloudOS.js"></script>
+<script type="text/javascript" src="js/CloudOS.js"></script>
+<script type="text/javascript" src="js/CloudOS-config.js"></script>
 
 <script type="text/javascript">
-
-	CloudOS.appKey = "0AB2F236-B1DE-11E2-B9AC-D788FE2E5C38";
-	CloudOS.callbackURL = "http://todo.windley.com/linkable.html";
-
 
        now = function(){
          return +new Date;
        }
+
 	$(document).ready( function() {		
 
                 function add_todo_list_item(id, desc) {
@@ -97,6 +95,7 @@
 		$('#add_todo').click( function() {
 			var todoDescription = $('#todo_description').val();
                         var todo_id = 'todo/'+now();
+			$("#success_alert").remove();
 
 // ---- add todo to PDS ---
 CloudOS.PDSAdd ('todo', todo_id, todoDescription, function(){
@@ -122,7 +121,11 @@ CloudOS.PDSAdd ('todo', todo_id, todoDescription, function(){
                   })
 
 	          if($('input.check_todo').length < 1) {
-		    $('.todo_list').prepend("<div class='alert alert-success'>Congratulations! All items completed.</div>");
+		    $('.todo_list').prepend("<div id='success_alert' class='alert alert-success'>Congratulations! All items completed.</div>");
+// ---- send notification ----
+CloudOS.sendNotification("TODO Demo", "You're Done", "You've completed all the items on your list!", 2, function(json){
+  console.log("Send notification ", json);
+});
                   }
   		  return false;
 		});
@@ -177,8 +180,8 @@ CloudOS.PDSList ('todo', function(json){
       <a class="brand" href="/">CloudOS Todo List</a>
       <div class="nav-collapse collapse">
 <ul class="nav pull-right">
-  <li class="nav-item nav-auth" style="display:none;"><a href="#" id="nav-logout">Logout</a></li>
-  <li class="nav-item nav-anon" style="display:none;"><a href="#" class="oauth-sqtag-url">Login</a></li>
+  <li class="nav-item nav-auth" style="display:none;"><a href="#" id="nav-logout">Unlink</a></li>
+  <li class="nav-item nav-anon" style="display:none;"><a href="#" class="oauth-sqtag-url">Link</a></li>
 </ul>	
       </div><!--/.nav-collapse -->
     </div>
