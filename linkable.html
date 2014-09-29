@@ -180,7 +180,7 @@ $('#nav-logout').click( function() {
 if (CloudOS.authenticatedSession()) {
   CloudOS.PDSList ('todo', function(json){
     $.each(json || [], function(id, desc) {
-       add_todo_list_item(id, JSON.parse(desc))
+       add_todo_list_item(id, desc)
        console.log("Listing ", id, " as ", desc);
     });
   });
