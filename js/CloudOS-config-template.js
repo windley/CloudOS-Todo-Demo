@@ -6,7 +6,7 @@ CloudOS.appKey = "<app key goes here>";
 
 // you can likely leave these alone
 CloudOS.host = "cs.kobj.net";
-CloudOS.login_server = "login.kynetx.com";
+CloudOS.login_server = "kibdev.kobj.net";
 
 // this must return a registered redirect URL
 CloudOS.callbackURL = window.location.href.split('#')[0];

@@ -70,6 +70,13 @@
          return +new Date;
        }
 
+       function getParameterByName(name) {
+         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+         var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+             results = regex.exec(location.search);
+         return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+       }
+
 	$(document).ready( function() {		
 
                 function add_todo_list_item(id, desc) {
@@ -130,7 +137,17 @@ CloudOS.sendNotification("TODO Demo", "You're Done", "You've completed all the i
   		  return false;
 		});
 
+		    
 
+// process the OAuth code if present
+if(getParameterByName("code") !== "") {
+  CloudOS.getOAuthAccessToken(
+	CloudOS.retrieveOAuthCode(window.location.search.substring(1)),
+        function(json) {
+	    window.location.href = window.location.href.split('?')[0];
+        });
+}
+		    
 // -------- Authenticate --------------
 var OAuth_Sqtag_URL = CloudOS.getOAuthURL();
 
@@ -148,14 +165,6 @@ if (CloudOS.authenticatedSession()) {
   $('li.nav-anon').show();
 }
 
-// process the OAuth code if present
-if(window.location.href.split('?')[0].split('=')[0] === "code") {
-  CloudOS.getOAuthAccessToken(
-	CloudOS.retrieveOAuthCode(window.location.search.substring(1)),
-        function(json) {
-	    window.location.href = window.location.href.split('?')[0];
-        });
-}
 
 $('#nav-logout').click( function() {
     CloudOS.removeSession();
@@ -167,12 +176,15 @@ $('#nav-logout').click( function() {
 // -------- End Authenticate --------------
 
 // -------- Initialize --------------
-CloudOS.PDSList ('todo', function(json){
+		    
+if (CloudOS.authenticatedSession()) {
+  CloudOS.PDSList ('todo', function(json){
     $.each(json || [], function(id, desc) {
        add_todo_list_item(id, JSON.parse(desc))
        console.log("Listing ", id, " as ", desc);
     });
-});		    
+  });
+}
 		
 	});
 </script>
