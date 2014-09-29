@@ -146,6 +146,10 @@ if (CloudOS.authenticatedSession()) {
 } else {
   $('li.nav-auth').hide();
   $('li.nav-anon').show();
+}
+
+// process the OAuth code if present
+if(window.location.href = window.location.href.split('?')[0].split('=')[0] eq "code") {
   CloudOS.getOAuthAccessToken(
 	CloudOS.retrieveOAuthCode(window.location.search.substring(1)),
         function(json) {
