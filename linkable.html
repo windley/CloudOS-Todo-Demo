@@ -149,7 +149,7 @@ if (CloudOS.authenticatedSession()) {
 }
 
 // process the OAuth code if present
-if(window.location.href = window.location.href.split('?')[0].split('=')[0] eq "code") {
+if(window.location.href.split('?')[0].split('=')[0] === "code") {
   CloudOS.getOAuthAccessToken(
 	CloudOS.retrieveOAuthCode(window.location.search.substring(1)),
         function(json) {
